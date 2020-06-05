@@ -15,6 +15,9 @@ library(rethinking)
 ```
 
 # 2. kafli
+
+Vil byrja á að biðjast afsökunar á því að sum svör eru á ensku en önnur á íslensku.
+
 ## 2E1: 
 Which of the expressions below correspond to the statement: *the probability of rain on Monday?*
 
@@ -317,8 +320,8 @@ $μ ∼$ Normal($0, 10$)
 $σ ∼$ Exponential($1$)
 
 **Lausn**:
-$y_i ∼$ Normal($μ$, $σ$)
 
+$y_i ∼$ Normal($μ$, $σ$)
 
 ## 4E2: 
 
@@ -326,77 +329,228 @@ In the model definition just above, how many parameters are in the posterior dis
 
 **Lausn**:
 
-
+The parameters are *unobservable*, so in the model definition above we have two parameters, $\mu$ and $\sigma$.
 
 ## 4E3: 
 
 Using the model definition above, write down the appropriate form of Bayes’ theorem that includes the proper likelihood and priors.
 
-Lausn:
+**Lausn**:
+
+$$
+\text{Pr}(\mu,\sigma|y) = \frac{\prod_i \space \text{Normal}(y_i|\mu, \sigma) \space \text{Normal}(\mu|0, 10)  \space \text{Exponential}(\sigma|1)}{\int \int \prod_i \space \text{Normal}(y_i|\mu, \sigma) \space \text{Normal}(\mu|0, 10)  \space \text{Exponential}(\sigma|1)d\mu d\sigma}
+$$
 
 ## 4E4: 
 
 In the model definition below, which line is the linear model?
-yi ∼ Normal(μ, σ)
-μi = α + βxi
-α ∼ Normal(0, 10)
-β ∼ Normal(0, 1)
-σ ∼ Exponential(2)
 
-Lausn:
+$y_i ∼$ Normal($μ$, $σ$)
+
+$μ_i = α + βx_i$
+
+$α ∼$ Normal($0$, $10$)
+
+$β ∼$ Normal($0$, $1$)
+
+$σ ∼$ Exponential($2$)
+
+**Lausn**:
+
+$μ_i = α + βx_i$ is the linear model. The first line is the likelihood and the last three lines are priors.
 
 ## 4E5: 
 
 In the model definition just above, how many parameters are in the posterior distribution?
 
-Lausn:
+**Lausn**:
+
+There are three parameters, $\alpha$, $\beta$ and $\sigma$. 
+
+Now $\mu$ is constructed from other parameters and thus no longer a parameter to be estimated.
 
 ## 4M1: 
 
 For the model definition below, simulate observed y values from the prior (not the posterior).
-yi ∼ Normal(μ, σ)
-μ ∼ Normal(0, 10)
-σ ∼ Exponential(1)
 
-Lausn:
+$y_i ∼$Normal($μ$, $σ$)
+
+$μ ∼$ Normal($0$, $10$)
+
+$σ ∼$ Exponential($1$)
+
+**Lausn**:
+
+```{r}
+sample_mu <- rnorm(1e4, 0, 10)
+sample_sigma <- rexp(1e4, 1)
+prior_y <- rnorm(1e4, sample_mu, sample_sigma)
+dens(prior_y)
+```
+
 
 ## 4M2: 
 
 Translate the model just above into a quap formula.
 
-Lausn:
+**Lausn**:
+
+```{r}
+flist <- alist(
+  y ~ dnorm(mu, sigma), 
+  mu ~ dnorm(0, 10), 
+  sigma ~ dexp(1)
+)
+```
 
 ## 4M3: 
 
 Translate the quap model formula below into a mathematical model definition.
-y ~ dnorm( mu , sigma ),
-mu <- a + b*x,
-a ~ dnorm( 0 , 10 ),
-b ~ dunif( 0 , 1 ),
-sigma ~ dexp( 1 )
 
-Lausn:
+```{r}
+flist <- alist(
+  y ~ dnorm(mu, sigma),
+  mu <- a + b*x,
+  a ~ dnorm(0, 10),
+  b ~ dunif(0, 1),
+  sigma ~ dexp(1)
+)
+```
+**Lausn**:
+
+$$
+y_i \sim \text{Normal}(\mu_i, \sigma) \\
+\mu_i = \alpha + \beta x_i \\
+\alpha \sim \text{Normal}(0, 10) \\
+\beta \sim \text{Uniform}(0, 1)\\
+\sigma \sim \text{Exponential}(1)
+$$
 
 ## 4M4: 
 
 A sample of students is measured for height each year for 3 years. After the third year, you want to fit a linear regression predicting height using year as a predictor. Write down the mathematical model definition for this regression, using any variable names and priors you choose. Be prepared to defend your choice of priors.
 
-Lausn:
+**Lausn**:
+
+Látum $h_i$ tákna hæð einstaklings $i$ og látum $x$ tákna ár.
+
+$$
+h_i \sim \text{Normal}(\mu_i, \sigma) \\
+\mu_i = \alpha + \beta x_i \\
+\alpha \sim \text{Normal}(175, 20) \\
+\beta \sim \text{Normal}(0, 1) \\
+\sigma \sim \text{Uniform}(0, 10)
+$$
+
+Fyrir $\alpha$ völdum við að láta priorinn fylgja Normaldreifingu með miðju í 175 (hæðin mín) og staðalfrávik 20. Priorinn fyrir $\beta$ fylgir einnig Normaldreifingu með miðju í 0 og staðalfrávikið 1. Þetta segir til um hversu mikið nemendur breytast í hæð á ári. Hæðin mín breytist næstum ekkert og því var þetta rökrétt.
+Fyrir $\sigma$ var valin jafndreifing frá 0 til 10 þar sem nemendur eru oft mjög mismunandi í hæð.
 
 ## 4M5: 
 
 Now suppose I remind you that every student got taller each year. Does this information lead you to change your choice of priors? How?
 
-Lausn:
+**Lausn**:
+
+Þetta þýðir að $\beta$ getur ekki verið neikvætt. Því er sniðugt að láta $\beta$ fylgja Log-Normaldreifingu með sömu stika. Fáum því:
+
+$$
+h_i \sim \text{Normal}(\mu_i, \sigma) \\
+\mu_i = \alpha + \beta x_i \\
+\alpha \sim \text{Normal}(175, 20) \\
+\beta \sim \text{Log-Normal}(0, 1) \\
+\sigma \sim \text{Uniform}(0, 10)
+$$
 
 ## 4M6: 
 
 Now suppose I tell you that the variance among heights for students of the same age is never more than 64cm. How does this lead you to revise your priors?
 
-Lausn:
+**Lausn**:
+
+Athugum að dreifnin er $\sigma^2$ en þá vitum við að $\sigma$ er aldrei hærra en $8$ (þar eð $8^2=64$). Ritum því:
+
+$$
+h_i \sim \text{Normal}(\mu_i, \sigma) \\
+\mu_i = \alpha + \beta x_i \\
+\alpha \sim \text{Normal}(175, 20) \\
+\beta \sim \text{Log-Normal}(0, 1) \\
+\sigma \sim \text{Uniform}(0, 8)
+$$
 
 ## 4M7: 
 
 Refit model m4.3 from the chapter, but omit the mean weight xbar this time. Compare the new model’s posterior to that of the original model. In particular, look at the covariance among the parameters. What is different? Then compare the posterior predictions of both models.
 
-Lausn:
+**Lausn**:
+
+Fáum fyrst úr bókinni:
+
+```{r}
+data(Howell1)
+d <- Howell1
+d2 <- d[d$age >= 18, ]
+
+xbar <- mean(d2$weight)
+
+m4.3 <- quap(
+  alist(
+    height ~ dnorm(mu, sigma), 
+    mu <- a+b*(weight-xbar),
+    a ~ dnorm(178, 20),
+    b ~ dlnorm(0, 1) ,
+    sigma ~ dunif(0, 50)
+  ), data=d2 )
+
+# marginal posterior distributions of the parameters
+precis(m4.3) %>% data.frame() %>% kable(col.names = c("mean", "sd", "5.5%", "94.5%")) %>% column_spec(1, bold=T) %>% kable_styling(bootstrap_options = "striped", full_width = F)
+
+# variance-covariance matrix
+vcov(m4.3) %>% round(4)
+
+pairs(m4.3)
+```
+
+Fáum nú módelið með umbeðinni breytingu:
+
+```{r}
+set.seed(8)
+m4.3_b <- quap(
+  alist(
+    height ~ dnorm(mu, sigma), 
+    mu <- a+b*(weight),
+    a ~ dnorm(178, 20),
+    b ~ dlnorm(0, 1) ,
+    sigma ~ dunif(0, 50)
+  ), data=d2)
+
+# marginal posterior distributions of the parameters
+precis(m4.3_b) %>% data.frame() %>% kable(col.names = c("mean", "sd", "5.5%", "94.5%")) %>% column_spec(1, bold=T) %>% kable_styling(bootstrap_options = "striped", full_width = F)
+
+# variance-covariance matrix
+vcov(m4.3_b) %>% round(4)
+
+# Correlation matrix
+vcov(m4.3_b) %>% cov2cor() %>% round(4)
+
+pairs(m4.3_b)
+```
+
+Sjáum að það er mikil fylgni milli $\alpha$ og $\beta$ í seinna módelinu.
+
+Lítum á "posterior predictions" beggja módela:
+
+```{r}
+# Fyrra módelið
+post <- extract.samples(m4.3)
+a_map <- mean(post$a)
+b_map <- mean(post$b)
+ggplot(d2, aes(x=weight, y=height)) + geom_point(color="royalblue") + stat_function(color="indianred3", fun=function(x) a_map + b_map*(x - xbar)) + ggtitle("m4.3")
+
+#Seinna módelið
+post_b <- extract.samples(m4.3_b)
+a_map_b <- mean(post_b$a)
+b_map_b <- mean(post_b$b)
+ggplot(d2, aes(x=weight, y=height)) + geom_point(color="royalblue") + stat_function(color="indianred3", fun=function(x) a_map_b + b_map_b*(x)) + ggtitle("m4.3_b")
+```
+
+Sjáum að það er lítill munur á því milli módela.
