@@ -251,36 +251,82 @@ HPDI(samples , prob=0.9) %>% t() %>% kable() %>% kable_styling(bootstrap_options
 
 Construct a posterior predictive check for this model and data. This means simulate the distribution of samples, averaging over the posterior uncertainty in p. What is the probability of observing 8 water in 15 tosses?
 
-Lausn:
+**Lausn**:
+
+```{r}
+w <- rbinom(1e4 , size=15 , prob=samples)
+mean(w == 8)
+#mynd til gamans
+ggplot(data.frame(w=as.factor(w)), aes(w)) + geom_bar(fill="cornflowerblue")
+```
+
 
 ## 3M4: 
 
 Using the posterior distribution constructed from the new (8/15) data, now calculate the probability of observing 6 water in 9 tosses.
 
-Lausn:
+**Lausn**:
+
+```{r}
+w <- rbinom(1e4 , size=9 , prob=samples)
+mean(w == 6)
+#mynd til gamans
+ggplot(data.frame(w=as.factor(w)), aes(w)) + geom_bar(fill="cornflowerblue")
+```
 
 ## 3M6: 
 
 Suppose you want to estimate the Earth’s proportion of water very precisely. Specifically, you want the 99% percentile interval of the posterior distribution of p to be only 0.05 wide. This means the distance between the upper and lower bound of the interval should be 0.05. How many times will you have to toss the globe to do this?
 
-Lausn:
+**Lausn**:
+
+```{r}
+p_grid <- seq(from=0 , to=1 , length.out=1000)
+prior <- rep( 1 , 1000 )
+true_p=0.7
+
+set.seed(9)
+
+#Function to compute the width of the PI
+width_PI <- function(N) {
+  likelihood <- dbinom(N*true_p, size=N, prob=p_grid)
+  posterior <- likelihood * prior
+  posterior <- posterior / sum(posterior)
+  samples <- sample(p_grid, prob=posterior, size=1e4, replace=TRUE)
+  interval <- PI(samples, prob=0.99)
+  diff(interval)
+}
+
+#Applies the function to a sequence of values and gets the lowest value where p<0.05
+values <- seq(from=0, to=5000, by=10)
+pis <- sapply(values, width_PI)
+answer <- max(pis[pis<0.05]) %>% match(., pis) %>% values[.]
+show(answer)
+```
 
 # 4. kafli
 
 ## 4E1: 
 
 In the model definition below, which line is the likelihood?
-yi ∼ Normal(μ, σ)
-μ ∼ Normal(0, 10)
-σ ∼ Exponential(1)
 
-Lausn:
+$y_i ∼$ Normal($μ$, $σ$)
+
+$μ ∼$ Normal($0, 10$)
+
+$σ ∼$ Exponential($1$)
+
+**Lausn**:
+$y_i ∼$ Normal($μ$, $σ$)
+
 
 ## 4E2: 
 
 In the model definition just above, how many parameters are in the posterior distribution?
 
-Lausn:
+**Lausn**:
+
+
 
 ## 4E3: 
 
