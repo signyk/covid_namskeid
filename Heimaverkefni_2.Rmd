@@ -21,6 +21,7 @@ library(rmdformats)
 library(grid)
 library(gridExtra)
 library(rethinking)
+library(dagitty)
 ```
 
 # 5. kafli
@@ -129,6 +130,7 @@ can have any predictor data you need.
 
 ***
 **Lausn**: Hér hefur hækkandi bensínverð neikvæð áhrif á keyrslu sem hefur jákvæð áhrif á hreyfingu sem hefur neikvæð áhrif á offitu. Við þurfum að búa til líkan sem inniheldur allar þessar spábreytur. Getum því t.d. ritað:
+
 $$
 O_i ∼ \text{Normal}(μ_i, σ) \\
 \mu_i = \alpha  + \beta_B B_i + \beta_K K_i + \beta_H H_i
@@ -184,42 +186,89 @@ variables should you condition on now?
 
 ![](DAG1.PNG)
 
-Á myndinni má sjá  nokkrar leiðir á milli $X$ og $Y$. Þær eru listaðar í kóðanum hér að neðan.
+Á myndinni má sjá  nokkrar leiðir á milli $X$ og $Y$. Þær eru:
+$$
+1) \quad X \rightarrow Y \\
+2) \quad X \leftarrow U \leftarrow A \rightarrow C \rightarrow Y \\
+3) \quad X \leftarrow U \rightarrow B \leftarrow C \rightarrow Y \\
+4) \quad X \leftarrow U \leftarrow A \rightarrow C \leftarrow V \rightarrow Y \\
+5) \quad X \leftarrow U \rightarrow B \leftarrow C \leftarrow V \rightarrow Y \\
+$$
+
+Þær leiðir sem eru opnar (og þarf að loka) eru leiðir $2$ og $4$. Til þess að loka þessum leiðum væri best að skilyrða á breytunni $A$ þar sem hér er breytan $C$ collider og við viljum því ekki skilyrða á henni.
+
+Við getum notað kóðann hér að neðan til þess að sannreyna þetta.
+
 ```{r}
-library(dagitty)
-dag_6.1 <- dagitty( "dag {
+dag_1 <- dagitty( "dag {
 U [unobserved]
 X -> Y
-X <- U <- A -> C -> Y U -> B <- C
+X <- U <- A -> C -> Y 
+U -> B <- C
+C <- V -> Y
 }")
-adjustmentSets( dag_6.1 , exposure="X" , outcome="Y" )
+adjustmentSets( dag_1 , exposure="X" , outcome="Y" )
 ```
 
-
-Nú þyrfti að skilyrða á 
+Niðurstaðan segir okkur að við getum annað hvort skilyrt á bæði $C$ og $V$ eða á $A$.
 
 ## 6M2
 Sometimes, in order to avoid multicollinearity, people inspect pairwise correlations among
 predictors before including them in a model. This is a bad procedure, because what matters is the
 conditional association, not the association before the variables are included in the model. To highlight
-this, consider the DAG X → Z → Y. Simulate data from this DAG so that the correlation
+this, consider the DAG $X → Z → Y$. Simulate data from this DAG so that the correlation
 between X and Z is very large. Then include both in a model prediction Y. Do you observe any
 multicollinearity? Why or why not? What is different from the legs example in the chapter?
 
 ***
-**Lausn**:
+**Lausn**: Sjáum hvernig hermdu gögnin eru gerð hér að neðan.
+
+```{r}
+set.seed(9)
+n <- 100
+x <- rnorm(n , mean=1 , sd=2)
+r <- 0.9
+z <- rnorm(n , mean=r*x , sd=1.2)
+r <- 0.75
+y <- rnorm(n , mean=r*z, sd=1.7)
+
+model_1 <- lm(y ~ x + z)
+model_2 <- lm(y ~ x)
+model_3 <- lm(y ~ z)
+par(mfrow=c(2,2))
+precis(model_1) %>% plot()
+precis(model_2) %>% plot()
+precis(model_3) %>% plot()
+
+post <- extract.samples(model_1)
+plot(x ~ z , post , col=col.alpha(rangi2,0.1) , pch=16)
+```
+
+Eins og sést á myndinni af módelinu með bæði $x$ og $z$ sem spábreytur (myndin efst til vinstri) er $0$ inni í öryggisbilinu fyrir $x$ og má því álykta að $x$ hefur ekki marktæk áhrif. En $z$ hefur augljóslega áhrif á $y$. 
+
+Þabnnig að þegar $z$ *er ekki* inni í módelinu hefur $x$ áhrif á $y$ en þegar $z$ *er* í módelinu hverfa áhrif $x$. 
+
+Á myndinni neðst til hægri sjáum við merki um multicollinearity (sem kemur ekki á óvart) en ef við höfum $z$ líka inni í módelinu þegar við notum $x$ sem spábreytu veldur það ekki vandamáli. 
+
+Ef við berum þetta saman við fótleggjadæmið þá er helsti munurinn sá að niðurstaðan í fótleggjadæminu, þegar báðir leggirnir voru notaðir sem spábreytur í módelinu, bendir til þess að hvorug breytan hafi marktæk áhrif á hæð. Niðurstaðan úr okkar dæmi bendir til þess að $z$ hafi áhrif en ekki $x$. Þetta gæti stafað af sambandinu milli breytanna.
 
 ## 6M3
-Learning to analyze DAGs requires practice. For each of the four DAGs below, state which
-variables, if any, you must adjust for (condition on) to estimate the total causal influence of X on Y.
-SJA MYND
+Learning to analyze DAGs requires practice. For each of the four DAGs below, state which variables, if any, you must adjust for (condition on) to estimate the total causal influence of $X$ on $Y$.
+
+![](DAGS2.PNG)
 
 ***
-**Lausn**:
+**Lausn**: Skoðum myndirnar frá vinstri til hægri, frá efri línu til neðri línu. 
 
+Á mynd 1 er nóg að skilyrða á $Z$ þar sem við höfum fork.
+
+Á mynd 2 þarf að skilyrða á bæði $Z$ og $A$ (þar sem $Z$ er bæði collider og pipe og því þarf líka að skilyrða á $A$).
+
+Á mynd 3 þarf ekki að skilyrða á neinum breytum þar sem $Z$ er collider í öllum leiðum.
+
+Á mynd 4 er nóg að skilyrða á $Z$ sem er bæði collider og pipe en með því að skilyrða á henni lokast leiðin frá $A$ til $Y$. Þá opnast leiðin frá $A$ til $X$ en það hefur engin áhrif á verkefnið.
 
 # 7. kafli
-
 
 ## 7E1
 State the three motivating criteria that define information entropy. Try to express each in your
@@ -246,7 +295,6 @@ Suppose a four-sided die is loaded such that, when tossed onto a table, it shows
 Suppose another four-sided die is loaded such that it never shows “4”. The other three sides
 show equally often. What is the entropy of this die?
 
-
 ***
 **Lausn**:
 
@@ -262,7 +310,6 @@ one?
 Explain the difference between model selection and model comparison. What information is
 lost under model selection?
 
-
 ***
 **Lausn**:
 
@@ -271,7 +318,6 @@ When comparing models with an information criterion, why must all models be fit 
 the same observations? What would happen to the information criterion values, if the models were
 fit to different numbers of observations? Perform some experiments, if you are not sure.
 
-
 ***
 **Lausn**:
 
@@ -279,13 +325,11 @@ fit to different numbers of observations? Perform some experiments, if you are n
 What happens to the effective number of parameters, as measured by PSIS or WAIC, as a prior
 becomes more concentrated? Why? Perform some experiments, if you are not sure.
 
-
 ***
 **Lausn**:
 
 ## 7M5
 Provide an informal explanation of why informative priors reduce overfitting.
-
 
 ***
 **Lausn**:
