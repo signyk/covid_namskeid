@@ -195,7 +195,7 @@ $$
 5) \quad X \leftarrow U \rightarrow B \leftarrow C \leftarrow V \rightarrow Y \\
 $$
 
-Þær leiðir sem eru opnar (og þarf að loka) eru leiðir $2$ og $4$. Til þess að loka þessum leiðum væri best að skilyrða á breytunni $A$ þar sem hér er breytan $C$ collider og við viljum því ekki skilyrða á henni.
+Þær leiðir sem eru opnar (og þarf að loka) eru leiðir $2$ og $4$. Til þess að loka þessum leiðum væri best að skilyrða á breytunni $A$.
 
 Við getum notað kóðann hér að neðan til þess að sannreyna þetta.
 
@@ -271,71 +271,207 @@ Learning to analyze DAGs requires practice. For each of the four DAGs below, sta
 # 7. kafli
 
 ## 7E1
-State the three motivating criteria that define information entropy. Try to express each in your
-own words.
+State the three motivating criteria that define information entropy. Try to express each in your own words.
 
 ***
 **Lausn**:
+
+1. Óvissumat á að vera samfellt
+
+2. Óvissumat á að aukast þegar fjöldi mögulegra atburða eykst
+
+3. Óvissumat á að vera samleggjandi (e. additive)
 
 ## 7E2
-Suppose a coin is weighted such that, when it is tossed and lands on a table, it comes up heads
-70% of the time. What is the entropy of this coin?
+Suppose a coin is weighted such that, when it is tossed and lands on a table, it comes up heads 70% of the time. What is the entropy of this coin?
 
 ***
-**Lausn**:
+**Lausn**: Höfum skv. jöfnu:
+
+$$
+H(p) = - \sum_{i=1}^n p_i \log(p_i) = -p_1 \cdot \log(p_1) - p_2 \cdot \log(p_2) = -0.7 \cdot \log(0.7) - 0.3 \cdot \log(0.3) \approx 0.6108643
+$$
+```{r}
+-0.7*log(0.7)-0.3*log(0.3)
+```
 
 ## 7E3
-Suppose a four-sided die is loaded such that, when tossed onto a table, it shows “1” 20%, “2”
-25%, “3” 25%, and “4” 30% of the time. What is the entropy of this die?
+Suppose a four-sided die is loaded such that, when tossed onto a table, it shows “1” 20%, “2” 25%, “3” 25%, and “4” 30% of the time. What is the entropy of this die?
 
 ***
-**Lausn**:
+**Lausn**: Fáum á sama hátt og áður:
+
+$$
+H(p) = - \sum_{i=1}^n p_i \log(p_i) = -0.2 \cdot \log(0.2) - 0.25 \cdot \log(0.25) -0.25 \cdot \log(0.25) -0.3 \cdot \log(0.3) \approx 1.376227
+$$
+
+```{r}
+-0.2*log(0.2)-0.25*log(0.25)-0.25*log(0.25)-0.3*log(0.3)
+```
 
 ## 7E4
-Suppose another four-sided die is loaded such that it never shows “4”. The other three sides
-show equally often. What is the entropy of this die?
+Suppose another four-sided die is loaded such that it never shows “4”. The other three sides show equally often. What is the entropy of this die?
 
 ***
-**Lausn**:
+**Lausn**: Fáum á sama hátt og áður:
+
+$$
+H(p) = - \sum_{i=1}^n p_i \log(p_i) \\ = -\frac{1}{3} \cdot \log(\frac{1}{3}) - \frac{1}{3} \cdot \log(\frac{1}{3}) -\frac{1}{3} \cdot \log(\frac{1}{3}) -0 \\ = - 1 \cdot \log(\frac{1}{3}) \approx 1.098612
+$$
+
+```{r}
+-1*log(1/3)
+```
 
 ## 7M1
-Write down and compare the definitions of AIC and WAIC. Which of these criteria is most
-general? Which assumptions are required to transform the more general criterion into a less general
-one?
+Write down and compare the definitions of AIC and WAIC. Which of these criteria is most general? Which assumptions are required to transform the more general criterion into a less general one?
 
 ***
-**Lausn**:
+**Lausn**: 
+
+*AIC* er táknað með eftirfarandi formúlu um frávik utan úrtaks:
+
+$$
+\text{AIC}=D_{train}+2p \\ = -2\text{lppd} +2p
+$$
+
+þar sem $p$ er fjöldi breyta og lppd er *"log-pointwise-predictive-density"*. Kosturinn við *AIC* er að formúlan er einföld en *AIC* er sjaldan notað nú til dags þar sem að gildið er ekki áreiðanlegt nema ákveðnar forsendur um "priors", "posterior" dreifingu og hlutfall milli úrtaksstærðar og fjölda breyta séu uppfylltar. Þetta veldur því að *AIC* er ekki jafn almennt og ákjósanlegt væri.
+
+*WAIC* er almennara en *AIC* þar sem engar sérstakar kröfur eru gerðar um lögun "posterior". Að neðan má sjá formúluna fyrir *WAIC*:
+$$
+\text{WAIC}(y, \Theta)=-2\left(\text{lppd}-\sum_i \text{var}_\theta \log p(y_i|\theta)\right)
+$$
+
+þar sem $y$ er mælingin og $Θ$ er "posterior" dreifingin.
 
 ## 7M2
-Explain the difference between model selection and model comparison. What information is
-lost under model selection?
+Explain the difference between model selection and model comparison. What information is lost under model selection?
 
 ***
-**Lausn**:
+**Lausn** (á ensku þar sem sum orðin er erfitt að þýða): 
+
+Model selection compares models, chooses the one with the lowest criterion value (i.e. WAIC) and then discards the other models. Model comparison does not choose one model but uses multiple models to infer how different variables influence predictions. Additionally the implied conditional independencies among the variables can help infer causal relationships between the variables.
+
+When model selection is used we loose valuable information about the differences between the model accuracies, which means we don’t know how confident to be in our model. This method also might loose reliable parameter interpretations on causal inference between variables.
 
 ## 7M3
-When comparing models with an information criterion, why must all models be fit to exactly
-the same observations? What would happen to the information criterion values, if the models were
-fit to different numbers of observations? Perform some experiments, if you are not sure.
+When comparing models with an information criterion, why must all models be fit to exactly the same observations? What would happen to the information criterion values, if the models were fit to different numbers of observations? Perform some experiments, if you are not sure.
 
 ***
-**Lausn**:
+**Lausn**: 
+
+Notum kóðann hér að neðan til þess að skoða hvernig *WAIC* breytist þegar módel er fittað við mismunandi mælingar (og mismunandi fjölda mælinga)
+
+Notum gagnasafnið *cars* og byrjum á að skipta því handahófskennt í tvö jafn stór gagnasöfn.
+
+```{r}
+set.seed(1)
+data(cars) 
+d1 <- cars[sample(25),]
+m <- quap(alist(
+  dist ~ dnorm(mu,sigma), mu <- a + b*speed,
+  a ~ dnorm(0,100),
+  b ~ dnorm(0,10),
+  sigma ~ dexp(1) ) , 
+  data=d1)
+
+WAIC(m)
+```
+
+```{r}
+set.seed(100)
+d2 <- cars[sample(25),]
+m <- quap(alist(
+  dist ~ dnorm(mu,sigma), mu <- a + b*speed,
+  a ~ dnorm(0,100),
+  b ~ dnorm(0,10),
+  sigma ~ dexp(1) ), data=d2)
+
+WAIC(m)
+```
+
+Sjáum að *WAIC* gildið er ólíkt en samt sem áður nokkuð líkt milli módela. Óáreiðanlegt er að bera saman módel sem eru fittuð á ólík úrtök þar sem hver einstök mæling hefur sitt eigið "penalty term" og "lppd" í *WAIC*.
+
+Athugum nú hvað gerist ef úrtaksstærðin er ólík. Þetta er nákvæmlega sami kóði og áður nema búið er að stækka úrtaksstærðina í fyrra módelinu en minnka í seinna.
+
+```{r}
+set.seed(1)
+data(cars) 
+d1 <- cars[sample(35),]
+m <- quap(alist(
+  dist ~ dnorm(mu,sigma), 
+  mu <- a + b*speed,
+  a ~ dnorm(0,100),
+  b ~ dnorm(0,10),
+  sigma ~ dexp(1)), 
+  data=d1)
+
+WAIC(m)
+```
+
+```{r}
+set.seed(2)
+d2 <- cars[sample(15),]
+m <- quap(alist(
+  dist ~ dnorm(mu,sigma), 
+  mu <- a + b*speed,
+  a ~ dnorm(0,100),
+  b ~ dnorm(0,10),
+  sigma ~ dexp(1) ), 
+  data=d2)
+WAIC(m)
+```
+
+Sjáum nú að talvert meiri munur er á *WAIC* gildum milli módela. Fleiri mælingar gefa okkur hærra *WAIC* gildi þar sem frávik mælinganna eru lögð saman og þannig gefa fleiri mælingar okkur hærri summu. 
 
 ## 7M4
-What happens to the effective number of parameters, as measured by PSIS or WAIC, as a prior
+What happens to the effective number of parameters, as measured by *PSIS* or *WAIC*, as a prior
 becomes more concentrated? Why? Perform some experiments, if you are not sure.
 
 ***
-**Lausn**:
+**Lausn**: Let's look at an example using the *cars* data again.
+
+Here we see the code with the same priors as before
+```{r}
+set.seed(1)
+d <- cars
+m <- quap(alist(
+  dist ~ dnorm(mu, sigma), 
+  mu <- a + b*speed,
+  a ~ dnorm(0, 100),
+  b ~ dnorm(0, 10),
+  sigma ~ dexp(1)), 
+  data=d)
+WAIC(m)
+PSIS(m)
+```
+Now let's see what happens when we make the priors more concentrated.
+
+```{r}
+m <- quap(alist(
+  dist ~ dnorm(mu, sigma), 
+  mu <- a + b*speed,
+  a ~ dnorm(0, 0.1), # More concentrated priors
+  b ~ dnorm(0, 0.1), # More concentrated priors
+  sigma ~ dexp(1)), 
+  data=d)
+WAIC(m)
+PSIS(m)
+precis(m)
+```
+
+*The effective number of parameters* or *the penalty term* is lower when the priors are more concentrated. 
 
 ## 7M5
 Provide an informal explanation of why informative priors reduce overfitting.
 
 ***
-**Lausn**:
+**Lausn**: "informative priors" takmarka hversu mikið extreme gildi geta haft áhrif á módelið, þ.e. þeir takmarka hversu mikið módelið getur lært af gögnunum og þannig hafa sérstakar mælingar ekki alltof mikil áhrif á fittið.
 
 ## 7M6
 Provide an informal explanation of why overly informative priors result in underfitting.
 
 ***
-**Lausn**:
+**Lausn**: Of "informative priors" takmarka of mikið getu módelsins til að læra af gögnunum og þannig er ólíklegra að eðlileg og góð gildi nái að hafa nógu mikil áhrif á fittið sem passar þá of illa við gögnin. 
+
+Þannig ef við skoðum bæði 7M5 og 7M6 saman sjáum við að það er mikilvægt að nota "informative priors" en það er mikilvægt að hafa þá ekki "of informative".
