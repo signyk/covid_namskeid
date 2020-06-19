@@ -1,6 +1,6 @@
 ---
 title: "Heimadæmi 2"
-author: Signý Kristín Sigurjónsdóttir
+author: "Signý Kristín Sigurjónsdóttir"
 date: "`r Sys.Date()`"
 output: 
     html_document:
@@ -12,7 +12,6 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, 
                       fig.asp = 0.621, fig.width = 8, out.width = "100%")
-
 ```
 
 ```{r warning=F, message=F, echo=F}
@@ -202,6 +201,7 @@ Við getum notað kóðann hér að neðan til þess að sannreyna þetta.
 ```{r}
 dag_1 <- dagitty( "dag {
 U [unobserved]
+V [unobserved]
 X -> Y
 X <- U <- A -> C -> Y 
 U -> B <- C
@@ -210,7 +210,7 @@ C <- V -> Y
 adjustmentSets( dag_1 , exposure="X" , outcome="Y" )
 ```
 
-Niðurstaðan segir okkur að við getum annað hvort skilyrt á bæði $C$ og $V$ eða á $A$.
+Niðurstaðan staðfestir þetta.
 
 ## 6M2
 Sometimes, in order to avoid multicollinearity, people inspect pairwise correlations among
