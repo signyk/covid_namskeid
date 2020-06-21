@@ -104,7 +104,7 @@ traceplot(m9.2)
 ```
 
 
-This Morkov chain is not stationary or well-mixing.
+This Markov chain is not stationary or well-mixing.
 
 ## 9M1
 Re-estimate the terrain ruggedness model from the chapter, but now using a uniform prior
@@ -184,7 +184,7 @@ warm_ups <- c(1, 7, 15, 50, 100, 500, 1000)
 # Data frame sem geymir n_eff gildin
 n_effs <- data.frame("warmup"=warm_ups, "a1"=rep(NA, length(warm_ups)), "a2"=rep(NA, length(warm_ups)), "b1"=rep(NA, length(warm_ups)), "b2"=rep(NA, length(warm_ups)), "sigma"=rep(NA, length(warm_ups)))
 
-# Fylla inn í n_effs með resampling og precis.
+# Fylla inn í n_effs með því að búa til nýtt módel með nýju warmup gildi og nota svo precis.
 for (i in 1:length(warm_ups)){
   m_tmp <- ulam(alist(
   log_gdp_std ~ dnorm(mu, sigma),
@@ -276,10 +276,10 @@ If a coefficient in a Poisson regression has value $1.7$, what does this imply a
 **Lausn**: Höfum:
 
 $$
-\log(\lambda)=\alpha + \beta x \quad \text{þ.e.} \\ 
-\lambda = \exp(\alpha + \beta x), \\
-
+\log( \lambda) = \alpha + \beta x \quad \text{þ.e.} \\ 
+\lambda = \exp( \alpha + \beta x)
 $$
+
 þar sem $\beta=1.7$. Þá fæst:
 
 $$
@@ -330,7 +330,7 @@ the models. What changes do you observe?
 ***
 **Lausn**: Notum kóðann hér að neðan til þess að framkvæma umbeðnar breytingar
 
-```{r, results="Hide"}
+```{r, results="hide"}
 data(Kline)
 d <- Kline
 d <- d %>% filter(culture != "Hawaii")
@@ -440,7 +440,7 @@ data(Hurricanes)
 Acquaint yourself with the columns by inspecting the help `?Hurricanes`. In this problem, you’ll focus on predicting deaths using femininity of each hurricane’s name. Fit and interpret the simplest possible model, a Poisson model of deaths using femininity as a predictor. You can use quap or ulam. Compare the model to an intercept-only Poisson model of deaths. How strong is the association between femininity of name and deaths? Which storms does the model fit (retrodict) well? Which storms does it fit poorly?
 
 ***
-**Lausn**: Lesum inn gögnin, stöðlum femininity og setjum svo upp einfalt módel.
+**Lausn**: Lesum inn gögnin, stöðlum femininity og setjum svo upp einfalt módel. Setjum einnig upp módel sem inniheldur bara skurðpunkt.
 
 ```{r}
 dat <- Hurricanes
@@ -485,7 +485,7 @@ ggplot(dat, aes(femininity_std, deaths)) + geom_point() +
   stat_function(color="indianred3", fun=function(x) exp(a_map + b_map*x)) +  geom_ribbon(aes(ymin=lower, ymax=upper, x=femininity_std), alpha=0.05)
 ```
 
-Sjáum af myndinni að lang flestir punktarnir liggja utan öryggisbilsins. Dreifnin í gögnunum er mikil og kvenleiki nafns útskýrir mjög lítið af dreifni breytunnar `deaths`.
+Sjáum af myndinni að lang flestir punktarnir liggja utan öryggisbilsins, raunar er öryggisbilið það mjótt að við sjáum það varla.þ Dreifnin í gögnunum er mikil og kvenleiki nafns útskýrir mjög lítið af dreifni breytunnar `deaths`.
 
 Módelið passar vel fyrir mjög fáa fellibyli. 
 
