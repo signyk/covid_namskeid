@@ -437,15 +437,94 @@ library(rethinking)
 data(Hurricanes)
 ```
 
-Acquaint yourself with the columns by inspecting the help ?Hurricanes. In this problem, you’ll focus on predicting deaths using femininity of each hurricane’s name. Fit and interpret the simplest possible model, a Poisson model of deaths using femininity as a predictor. You can use quap or ulam. Compare the model to an intercept-only Poisson model of deaths. How strong is the association between femininity of name and deaths? Which storms does the model fit (retrodict) well? Which storms does it fit poorly?
+Acquaint yourself with the columns by inspecting the help `?Hurricanes`. In this problem, you’ll focus on predicting deaths using femininity of each hurricane’s name. Fit and interpret the simplest possible model, a Poisson model of deaths using femininity as a predictor. You can use quap or ulam. Compare the model to an intercept-only Poisson model of deaths. How strong is the association between femininity of name and deaths? Which storms does the model fit (retrodict) well? Which storms does it fit poorly?
 
 ***
-**Lausn**: 
+**Lausn**: Lesum inn gögnin, stöðlum femininity og setjum svo upp einfalt módel.
+
+```{r}
+dat <- Hurricanes
+dat$femininity_std <- (dat$femininity-mean(dat$femininity))/sd(dat$femininity)
+
+fit_simple <- quap(
+  alist(
+    deaths ~ dpois(lambda), 
+    log(lambda) <- a + b*femininity_std, 
+    a ~ dnorm(0, 10),
+    b ~ dnorm(0, 10)
+  ), data=dat
+)
+
+precis(fit_simple)
+
+fit_intercept <- quap(
+  alist(
+    deaths ~ dpois(lambda), 
+    log(lambda) <- a,
+    a ~ dnorm(0, 10)
+  ), data=dat
+)
+
+precis(fit_intercept)
+compare(fit_simple, fit_intercept)
+```
+
+Sjaum af úttaki `precis` og `compare` að svo virðist sem það sé jákvæð fylgni milli kveinleika nafns og fjölda dauða og að módelið með kveinleikabreytunni er betra heldur en módelið sem inniheldur eingöngu skurðpunkt. Athugum þetta betur.
+
+Teiknum upp gögnin auk `fit_simple` með öryggisbili.
+
+```{r}
+post <- extract.samples(fit_simple)
+a_map <- mean(post$a)
+b_map <- mean(post$b)
+
+lower <- exp(PI(post$a)[1] + PI(post$b)[1]*dat$femininity_std)
+upper <- exp(PI(post$a)[2] + PI(post$b)[2]*dat$femininity_std)
+
+ggplot(dat, aes(femininity_std, deaths)) + geom_point() +
+  stat_function(color="indianred3", fun=function(x) exp(a_map + b_map*x)) +  geom_ribbon(aes(ymin=lower, ymax=upper, x=femininity_std), alpha=0.05)
+```
+
+Sjáum af myndinni að lang flestir punktarnir liggja utan öryggisbilsins. Dreifnin í gögnunum er mikil og kvenleiki nafns útskýrir mjög lítið af dreifni breytunnar `deaths`.
+
+Módelið passar vel fyrir mjög fáa fellibyli. 
 
 ## 12H2
 Counts are nearly always over-dispersed relative to Poisson. So fit a gamma-Poisson (aka
 negative-binomial) model to predict deaths using femininity. Show that the over-dispersed model no longer shows as precise a positive association between femininity and deaths, with an 89% interval that overlaps zero. Can you explain why the association diminished in strength?
 
 ***
-**Lausn**: 
+**Lausn**: Setjum módelið upp og berum svo saman við módelið úr dæmi 12H1.
 
+```{r}
+fit_simple2 <- quap(
+  alist(
+    deaths ~ dgampois(lambda, phi), 
+    log(lambda) <- a + b*femininity_std, 
+    a ~ dnorm(0, 10),
+    b ~ dnorm(0, 10),
+    phi ~ dexp(1)
+  ), data=dat
+)
+
+precis(fit_simple2)
+plot(coeftab(fit_simple, fit_simple2) , pars=c("a","b"))
+```
+
+Sjáum að óvissan er talsvert meiri í þessu módeli og nær því öryggisbilið fyrir `b` yfir $0$. Teiknum aftur upp gögnin með þessu módeli.
+
+```{r}
+post2 <- extract.samples(fit_simple2)
+a_map2 <- mean(post2$a)
+b_map2 <- mean(post2$b)
+
+lower2 <- exp(PI(post2$a)[1] + PI(post2$b)[1]*dat$femininity_std)
+upper2 <- exp(PI(post2$a)[2] + PI(post2$b)[2]*dat$femininity_std)
+
+ggplot(dat, aes(x=femininity_std, y=deaths)) + geom_point() +
+  stat_function(color="indianred3", fun=function(x) exp(a_map2 + b_map2*x)) +  geom_ribbon(aes(ymin=lower2, ymax=upper2, x=femininity_std), alpha=0.11)
+```
+
+Þessi mynd sýnir aðeins stærra öryggisbil en samt eru flestir punktarnir utan þess. Sjáum líka að hallinn á línunni er mjög lítill.
+
+Ástæðan fyrir þessum muni á 12H1 og 12H2 (Poisson vs. gamma-Poisson) er sú að gamma-Poisson módelið inniheldur stikann `phi` sem hefur þau áhrif dreifnin getur orðið meiri og þannig getur hver fellibylur haft eigið væntigildi dauða.
