@@ -1,0 +1,164 @@
+---
+title: "Heimadæmi 4"
+author: "Signý Kristín Sigurjónsdóttir"
+date: "`r Sys.Date()`"
+output: 
+    html_document:
+        code_folding: hide
+        theme: flatly
+        toc: true
+        toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, 
+                      fig.asp = 0.621, fig.width = 8, out.width = "100%")
+```
+
+```{r warning=F, message=F, echo=F}
+library(tidyverse)
+library(rmdformats)
+library(grid)
+library(gridExtra)
+library(rethinking)
+library(dagitty)
+library(kableExtra)
+```
+
+# 13. kafli
+
+## 13E1
+Which of the following priors will produce more shrinkage in the estimates?
+
+(a) $\alpha_{tank} \sim \mathrm{Normal}(0,1)$;
+
+(b) $\alpha_{tank} \sim \mathrm{Normal}(0,2)$.
+
+***
+
+**Lausn**: Prófum að teikna þessa prior-a upp:
+
+```{r}
+ggplot(data=data.frame(x=-4:4), aes(x)) + stat_function(fun=dnorm, n=1000, args = list(mean = 0, sd = 1), size=1.2, aes(color="a")) + stat_function(fun=dnorm, n=1000, args = list(mean = 0, sd = 2), size=1.2, aes(color="b")) + scale_colour_manual("Legend", values = c("dodgerblue", "indianred3"))
+```
+Sjáum að *a* gefur meiri rýrnun (e. shrinkage), en það er vegna þess að *a* er með minna staðalfrávik.
+
+## 13E2
+Rewrite the following model as a multilevel model.
+
+$$
+y_i \sim \mathrm{Binomial}(1,p_i) \\
+\mathrm{logit}(p_i) = \alpha_{group[i]} + \beta x_i \\
+\alpha_{group} \sim \mathrm{Normal}(0,1.5) \\
+\beta \sim \mathrm{Normal}(0,0.5)
+$$
+
+***
+
+**Lausn**: Til þess að framkvæma umbeðnar breytingar þarf að breyta hvernig $\alpha_{group}$ er skilgreint og bæta við tveimur priors. Sjáum nýja módelið (multilevel) hér að neðan.
+
+$$
+y_i \sim \mathrm{Binomial}(1,p_i) \\
+\mathrm{logit}(p_i) = \alpha_{group[i]} + \beta x_i \\
+\alpha_{group} \sim \mathrm{Normal}(\bar{\alpha}, \sigma_{\alpha}) \\
+\beta \sim \mathrm{Normal}(0,0.5) \\
+\bar{\alpha} ∼ \mathrm{Normal}(0, 1.5) \\
+\sigma_{\alpha} ∼ \mathrm{Exponential}(1)
+$$
+
+## 13E3
+Rewrite the following model as a multilevel model.
+
+$$
+y_i \sim \mathrm{Normal}(\mu_i,\sigma) \\
+\mu_i = \alpha_{group[i]} + \beta x_i \\
+\alpha_{group} \sim \mathrm{Normal}(0,5) \\
+\beta \sim \mathrm{Normal}(0,1) \\
+\sigma \sim \mathrm{Exponential}(1)
+$$
+
+***
+
+**Lausn**: Líkt og í dæminu á undan fæst:
+
+
+
+$$
+y_i \sim \mathrm{Normal}(\mu_i,\sigma) \\
+\mu_i = \alpha_{group[i]} + \beta x_i \\
+\alpha_{group} \sim \mathrm{Normal}(0,5) \\
+\beta \sim \mathrm{Normal}(0,1) \\
+\sigma \sim \mathrm{Exponential}(1) \\
+\bar{\alpha} ∼ \mathrm{Normal}(0, 1.5) \\
+\sigma_{\alpha} ∼ \mathrm{Exponential}(1)
+$$
+
+## 13E4
+Write a mathematical model formula for a Poisson regression with varying intercepts.
+
+***
+
+**Lausn**: Styðjumst við módelin í **13E2** og **13E3.**
+
+$$
+y_i \sim \mathrm{Poisson}(\lambda_i) \\
+\mathrm{log}(\lambda_i) = \alpha_{group[i]} + \beta x_i \\
+\alpha_{group} \sim \mathrm{Normal}(\bar{\alpha}, \sigma_{\alpha}) \\
+\beta \sim \mathrm{Normal}(0,0.5) \\
+\bar{\alpha} ∼ \mathrm{Normal}(0, 1.5) \\
+\sigma_{\alpha} ∼ \mathrm{Exponential}(1)
+$$
+
+
+
+
+
+
+## 13E5
+Write a mathematical model formula for a Poisson regression with two different kinds of varying
+intercepts, a cross-classified model.
+
+**Lausn:**
+
+***
+
+
+# 14. kafli
+
+
+
+## 14E1
+Add to the following model varying slopes on the predictor x.
+$$
+y_i \sim \mathrm{Normal}(\mu_i,\sigma) \\
+\mu_i = \alpha_{group[i]} + \beta x_i \\
+\alpha_{group} \sim \mathrm{Normal}(\alpha,\sigma_{\alpha}) \\
+\alpha \sim \mathrm{Normal}(0,10) \\
+\beta \sim \mathrm{Normal}(0,1) \\
+\sigma \sim \mathrm{Exponential}(1) \\
+\sigma_{\alpha} \sim \mathrm{Exponential}(1) 
+$$
+
+**Lausn:**
+
+***
+
+
+## 14E2
+Think up a context in which varying intercepts will be positively correlated with varying
+slopes. Provide a mechanistic explanation for the correlation.
+
+**Lausn:**
+
+***
+
+
+## 14E3
+When is it possible for a varying slopes model to have fewer effective parameters (as estimated
+by WAIC or PSIS) than the corresponding model with fixed (unpooled) slopes? Explain.
+
+**Lausn:**
+
+***
+
+

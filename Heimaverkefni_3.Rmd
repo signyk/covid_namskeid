@@ -1,5 +1,5 @@
 ---
-title: "Heimadæmi 2"
+title: "Heimadæmi 3"
 author: "Signý Kristín Sigurjónsdóttir"
 date: "`r Sys.Date()`"
 output: 
