@@ -81,15 +81,13 @@ $$
 
 **Lausn**: Líkt og í dæminu á undan fæst:
 
-
-
 $$
 y_i \sim \mathrm{Normal}(\mu_i,\sigma) \\
 \mu_i = \alpha_{group[i]} + \beta x_i \\
-\alpha_{group} \sim \mathrm{Normal}(0,5) \\
+\alpha_{group} \sim \mathrm{Normal}(\bar{\alpha}, \sigma_{\alpha}) \\
 \beta \sim \mathrm{Normal}(0,1) \\
 \sigma \sim \mathrm{Exponential}(1) \\
-\bar{\alpha} ∼ \mathrm{Normal}(0, 1.5) \\
+\bar{\alpha} ∼ \mathrm{Normal}(0, 5) \\
 \sigma_{\alpha} ∼ \mathrm{Exponential}(1)
 $$
 
@@ -108,11 +106,6 @@ y_i \sim \mathrm{Poisson}(\lambda_i) \\
 \bar{\alpha} ∼ \mathrm{Normal}(0, 1.5) \\
 \sigma_{\alpha} ∼ \mathrm{Exponential}(1)
 $$
-
-
-
-
-
 
 ## 13E5
 Write a mathematical model formula for a Poisson regression with two different kinds of varying
@@ -188,12 +181,9 @@ Think up a context in which varying intercepts will be positively correlated wit
 
 **Lausn**: Dæmi um þetta er innistæða á bankabók yfir einhvern tíma. Ef innistæðan í byrjun er há mun hún einnig vaxa hraðar (vextirnir eru prósenta af innistæðu). En ef innistæðan er lág í byrjun verður hallatalan minni (minni peningur sem fer á bankabókina á hverri tímaeiningu). Þannig er jákvæð fylgni milli skurðpunktar og hallatölu.
 
-
 ## 14E3
 When is it possible for a varying slopes model to have fewer effective parameters (as estimated by `WAIC` or `PSIS`) than the corresponding model with fixed (unpooled) slopes? Explain.
 
 ***
 
 **Lausn**: Þetta getur gerst ef það er mjög lítil dreifni milli hópa í mishallamódeli (e. varying slopes model). Þetta veldur miklu "shrinkage" á mati stikanna sem veldur þessum muni á fjölda "effective parameters".
-
-
