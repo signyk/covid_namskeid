@@ -39,7 +39,7 @@ Which of the following priors will produce more shrinkage in the estimates?
 **Lausn**: Prófum að teikna þessa prior-a upp:
 
 ```{r}
-ggplot(data=data.frame(x=-4:4), aes(x)) + stat_function(fun=dnorm, n=1000, args = list(mean = 0, sd = 1), size=1.2, aes(color="a")) + stat_function(fun=dnorm, n=1000, args = list(mean = 0, sd = 2), size=1.2, aes(color="b")) + scale_colour_manual("Legend", values = c("dodgerblue", "indianred3"))
+ggplot(data=data.frame(x=-5:5), aes(x)) + stat_function(fun=dnorm, n=1000, args = list(mean = 0, sd = 1), size=1.2, aes(color="a")) + stat_function(fun=dnorm, n=1000, args = list(mean = 0, sd = 2), size=1.2, aes(color="b")) + scale_colour_manual("Legend", values = c("dodgerblue", "indianred3"))
 ```
 Sjáum að *a* gefur meiri rýrnun (e. shrinkage), en það er vegna þess að *a* er með minna staðalfrávik.
 
@@ -118,17 +118,26 @@ $$
 Write a mathematical model formula for a Poisson regression with two different kinds of varying
 intercepts, a cross-classified model.
 
-**Lausn:**
-
 ***
 
+**Lausn**: Bætum við öðrum stika, $\alpha_{block}$. 
+
+$$
+y_i \sim \mathrm{Poisson}(\lambda_i) \\
+\mathrm{log}(\lambda_i) = \alpha_{group[i]} + \alpha_{block[i]} + \beta x_i \\
+\alpha_{group} \sim \mathrm{Normal}(\bar{\alpha}, \sigma_{group}) \\
+\alpha_{block} \sim \mathrm{Normal}(0, \sigma_{block}) \\
+\beta \sim \mathrm{Normal}(0,0.5) \\
+\bar{\alpha} ∼ \mathrm{Normal}(0, 1.5) \\
+\sigma_{group} ∼ \mathrm{Exponential}(1) \\
+\sigma_{block} ∼ \mathrm{Exponential}(1)
+$$
 
 # 14. kafli
 
-
-
 ## 14E1
-Add to the following model varying slopes on the predictor x.
+Add to the following model varying slopes on the predictor $x$.
+
 $$
 y_i \sim \mathrm{Normal}(\mu_i,\sigma) \\
 \mu_i = \alpha_{group[i]} + \beta x_i \\
@@ -139,26 +148,52 @@ y_i \sim \mathrm{Normal}(\mu_i,\sigma) \\
 \sigma_{\alpha} \sim \mathrm{Exponential}(1) 
 $$
 
-**Lausn:**
-
 ***
 
+**Lausn**: Sjáum umbeðnar breytingar hér að neðan:
+
+$$
+y_i \sim \mathrm{Normal}(\mu_i,\sigma) \\
+\mu_i = \alpha_{group[i]} + \beta_{group[i]} x_i \\
+\left[\begin{array}
+{r}
+\alpha_{group} \\
+\beta_{group}
+\end{array}\right] \sim \mathrm{MVNormal} \left(\left[\begin{array}
+{r}
+\alpha \\
+\beta
+\end{array}\right], \mathbf{S} \right)\\
+\mathbf{S} = \left[\begin{array}
+{rr}
+\sigma_{\alpha} & 0  \\
+0 &  \sigma_{\beta}
+\end{array}\right] \mathbf{R} \left[\begin{array}
+{rr}
+\sigma_{\alpha} & 0  \\
+0 &  \sigma_{\beta}
+\end{array}\right]\\
+\alpha \sim \mathrm{Normal}(0,10) \\
+\beta \sim \mathrm{Normal}(0,1) \\
+\sigma \sim \mathrm{Exponential}(1) \\
+\sigma_{\alpha} \sim \mathrm{Exponential}(1) \\
+\sigma_{\beta} \sim \mathrm{Exponential}(1) \\
+\mathbf{R} \sim \text{LKJcorr}(2)
+$$
 
 ## 14E2
-Think up a context in which varying intercepts will be positively correlated with varying
-slopes. Provide a mechanistic explanation for the correlation.
-
-**Lausn:**
+Think up a context in which varying intercepts will be positively correlated with varying slopes. Provide a mechanistic explanation for the correlation.
 
 ***
+
+**Lausn**: Dæmi um þetta er innistæða á bankabók yfir einhvern tíma. Ef innistæðan í byrjun er há mun hún einnig vaxa hraðar (vextirnir eru prósenta af innistæðu). En ef innistæðan er lág í byrjun verður hallatalan minni (minni peningur sem fer á bankabókina á hverri tímaeiningu). Þannig er jákvæð fylgni milli skurðpunktar og hallatölu.
 
 
 ## 14E3
-When is it possible for a varying slopes model to have fewer effective parameters (as estimated
-by WAIC or PSIS) than the corresponding model with fixed (unpooled) slopes? Explain.
-
-**Lausn:**
+When is it possible for a varying slopes model to have fewer effective parameters (as estimated by `WAIC` or `PSIS`) than the corresponding model with fixed (unpooled) slopes? Explain.
 
 ***
+
+**Lausn**: Þetta getur gerst ef það er mjög lítil dreifni milli hópa í mishallamódeli (e. varying slopes model). Þetta veldur miklu "shrinkage" á mati stikanna sem veldur þessum muni á fjölda "effective parameters".
 
 
